@@ -39,6 +39,7 @@ $WebClient.DownloadFile($GitUrl,$GitFilePath)
 
 Invoke-Expression -Command "$VSCodeFilePath /VERYSILENT " 
 Invoke-Expression -Command "$GitFilePath /VERYSILENT " 
+Start-Sleep -Seconds 5
 $currentLocation = Get-Location
 Set-Location ("$env:LOCALAPPDATA\Programs\Microsoft VS Code\")
 Invoke-Expression -Command (".\Code.exe")
