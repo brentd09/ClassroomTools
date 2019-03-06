@@ -1,0 +1,7 @@
+{
+  "editor.tabSize": 2,
+  "git.confirmSync": false,
+  "editor.mouseWheelZoom": true,
+  "editor.renderControlCharacters": false,
+  "editor.renderWhitespace": "all"
+}

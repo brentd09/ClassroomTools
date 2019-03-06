@@ -1,0 +1,48 @@
+{
+	// Place your snippets for powershell here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+
+	"Begin Script": {
+		"prefix": "Begin",
+		"body": [
+			"<#",
+			".Synopsis",
+			"  ${1:Short description}",
+			".DESCRIPTION",
+			"  ${2:Long description}",
+			".EXAMPLE",
+			"  ${3:Example of how to use this cmdlet}",
+			".EXAMPLE",
+			"  ${4:Another example of how to use this cmdlet}",
+			".PARAMETER ${5:ParamName}",
+			"  ${6:Parameter Description}",
+			".NOTES",
+			"  General notes",
+			"  Created By  : Brent Denny",
+			"  Date Created: $CURRENT_DATE-$CURRENT_MONTH_NAME_SHORT-$CURRENT_YEAR",
+			".COMPONENT",
+			"  ${7:The component this cmdlet belongs to}",
+			".ROLE",
+			"  ${8:The role this cmdlet belongs to}",
+			".FUNCTIONALITY",
+			"  ${9:The functionality that best describes this cmdlet}",
+			"#>",
+			"[CmdletBinding()]",
+			"Param (",
+			"  ${0:[string]$$Parameter1}",
+			")"
+		],
+		"description": "This will add CBHelp and CmdletBinding and Param Block to the script"
+	},
+}
