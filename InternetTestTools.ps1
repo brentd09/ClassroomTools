@@ -38,4 +38,4 @@ function Test-HomeInternetConnection {
   '---------' | Out-File -Append $LogFile
 }
 
-Test-HomeInternetConnection
+Invoke-Command -ScriptBlock {Test-HomeInternetConnection} -AsJob
