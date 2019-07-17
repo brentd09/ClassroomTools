@@ -56,11 +56,11 @@ function Test-Internet {
       $TimeTested = Get-Date
       $TimeTestedString = ($TimeTested.ToString() ) -replace '[ :/]','-'
       $TestConnectionResults = Test-NetConnection -ComputerName 1.1.1.1 
+      if ($TestConnectionResults.PingSucceeded -eq $false) {$TestConnectionResults = Test-NetConnection -ComputerName 8.8.8.8 }
       $TestReport = $TestConnectionResults | Select-Object -Property ComputerName,PingSucceeded,@{n='TimeOfTest';e={$TimeTestedString}}
       if ($FirstTest -eq $true) {$FirstTest = $false; $TestReport | Format-Table | Out-File -Append -FilePath $LogAllFilePath}
       else {$TestReport | Format-Table -HideTableHeaders | Out-File -Append -FilePath $LogAllFilePath}
       [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogAllFilePath
-      if ($TestConnectionResults.PingSucceeded -eq $false) {$TestConnectionResults = Test-NetConnection -ComputerName 8.8.8.8}
       if ($InternetIsWorking -eq $false -and $TestConnectionResults.PingSucceeded -eq $true) {
         $InternetRevivedTime = Get-Date
         $InternetRevivedTimeString = ($InternetRevivedTime.ToString() ) -replace '[ :/]','-'
@@ -68,6 +68,7 @@ function Test-Internet {
         $InternetIsWorking = $true
         $State | Out-File -Append -FilePath $LogSummaryFilePath
         '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
+        [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogSummaryFilePath
       }
       if ($InternetIsWorking -eq $true -and $TestConnectionResults.PingSucceeded -eq $false) {
         $InternetDroppedTime = Get-Date
@@ -77,7 +78,6 @@ function Test-Internet {
         '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
         $State | Out-File -Append -FilePath $LogSummaryFilePath
         [IO.File]::ReadAllText($LogSummaryFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogSummaryFilePath
-
       }
     } # whileloop
     '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
