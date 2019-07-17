@@ -90,5 +90,3 @@ function Test-Internet {
     [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogAllFilePath
   } # startjob
 }
-
-Test-Internet -Days 1
