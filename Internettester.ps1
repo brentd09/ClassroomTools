@@ -46,15 +46,14 @@ function Test-Internet {
         '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
         $State | Out-File -Append -FilePath $LogSummaryFilePath
       }
-    }
-  }
-  '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
-  "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogSummaryFilePath
-  '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
-  '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
-  "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogAllFilePath
-  '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
-
+    } # whileloop
+    '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
+    "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogSummaryFilePath
+    '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
+    '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
+    "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogAllFilePath
+    '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
+  } # startjob
 }
 
 Test-Internet
