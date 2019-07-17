@@ -5,16 +5,21 @@ function Test-Internet {
     $FirstTest = $true
     $LaunchDate = Get-Date
     $LaunchDateString = ($LaunchDate.ToString() ) -replace '[ :/]','-'
-    $InternetIsWorking = Test-NetConnection -ComputerName 1.1.1.1 -InformationLevel Quiet
+    $InitalTest = Test-NetConnection -ComputerName 1.1.1.1
+    $InternetIsWorking = ($InitalTest).PingSucceeded
     $LogFolder = $env:HOMEDRIVE + $env:HOMEPATH + '\Documents\'
     $LogAllFilePath = $LogFolder + 'InternetLogAllData' + $LaunchDateString + '.log'
     $LogSummaryFilePath = $LogFolder + 'InternetSummaryData' + $LaunchDateString + '.log'
     $LogEndDate = $LaunchDate.AddDays(1)
+    $InitialReport = $InitalTest | Select-Object -Property ComputerName,PingSucceeded,@{n='TimeOfTest';e={$TimeTestedString}}
+
     '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
-    "Log begins at $LaunchDateString" | Out-File -Append -FilePath $LogSummaryFilePath
+    "Log began at $LaunchDateString" | Out-File -Append -FilePath $LogSummaryFilePath
+    "Initial test shows:" | Out-File -Append -FilePath $LogSummaryFilePath
+    $InitialReport | Out-File -Append -FilePath $LogSummaryFilePath
     '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
     '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
-    "Log begins at $LaunchDateString" | Out-File -Append -FilePath $LogAllFilePath
+    "Log began at $LaunchDateString" | Out-File -Append -FilePath $LogAllFilePath
     '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
     while ($LaunchDate -le $LogEndDate) {
       $TimeTested = Get-Date
@@ -43,6 +48,13 @@ function Test-Internet {
       }
     }
   }
+  '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
+  "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogSummaryFilePath
+  '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
+  '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
+  "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogAllFilePath
+  '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
+
 }
 
 Test-Internet
