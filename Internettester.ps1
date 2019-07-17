@@ -11,7 +11,7 @@ function Test-Internet {
     $LogAllFilePath = $LogFolder + 'InternetLogAllData' + $LaunchDateString + '.log'
     $LogSummaryFilePath = $LogFolder + 'InternetSummaryData' + $LaunchDateString + '.log'
     $LogEndDate = $LaunchDate.AddDays(1)
-    $InitialReport = $InitalTest | Select-Object -Property ComputerName,PingSucceeded,@{n='TimeOfTest';e={$TimeTestedString}}
+    $InitialReport = $InitalTest | Select-Object -Property ComputerName,PingSucceeded,@{n='TimeOfTest';e={$LaunchDateString}}
 
     '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
     "Log began at $LaunchDateString" | Out-File -Append -FilePath $LogSummaryFilePath
@@ -21,6 +21,9 @@ function Test-Internet {
     '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
     "Log began at $LaunchDateString" | Out-File -Append -FilePath $LogAllFilePath
     '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
+    [IO.File]::ReadAllText($LogSummaryFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogSummaryFilePath
+    [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogAllFilePath
+
     while ($LaunchDate -le $LogEndDate) {
       $TimeTested = Get-Date
       $TimeTestedString = ($TimeTested.ToString() ) -replace '[ :/]','-'
@@ -45,6 +48,8 @@ function Test-Internet {
         $InternetIsWorking = $false
         '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
         $State | Out-File -Append -FilePath $LogSummaryFilePath
+        [IO.File]::ReadAllText($LogSummaryFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogSummaryFilePath
+
       }
     } # whileloop
     '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
@@ -53,6 +58,8 @@ function Test-Internet {
     '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
     "Log ended at $TimeTestedString" | Out-File -Append -FilePath $LogAllFilePath
     '-----------------------' | Out-File -Append -FilePath $LogAllFilePath
+    [IO.File]::ReadAllText($LogSummaryFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogSummaryFilePath
+    [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogAllFilePath
   } # startjob
 }
 
