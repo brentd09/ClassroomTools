@@ -5,12 +5,15 @@
   This script removes all of the user data recoreded by the browser regarding 
 .EXAMPLE
   Remove-BrowserUserData 
-  Deletes the User Data
+  Deletes the user data from Chrome, Firefox and IE
 .NOTES
   General notes
 #>
 [CmdletBinding()]
-Param()
+Param(
+  [ValidateSet(‘Chrome’,’FireFox’,’IE’)]
+  [string[]]$BrowserType
+)
 Get-Process | Where-Object {$_.ProcessName -in @('chrome','firefox','iexplore')} | Stop-Process -Force
 $Counter = 0
 do {
