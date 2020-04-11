@@ -64,16 +64,16 @@ function Test-Internet {
       if ($InternetIsWorking -eq $false -and $TestConnectionResults.PingSucceeded -eq $true) {
         $InternetRevivedTime = Get-Date
         $InternetRevivedTimeString = ($InternetRevivedTime.ToString() ) -replace '[ :/]','-'
-        $State = 'internet came back online' + $InternetRevivedTimeString
+        $State = 'internet came back online ' + $InternetRevivedTimeString
         $InternetIsWorking = $true
         $State | Out-File -Append -FilePath $LogSummaryFilePath
         '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
-        [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogSummaryFilePath
+        [IO.File]::ReadAllText($LogAllFilePath) -replace '\s+\r\n+', "`r`n" | Out-File $LogAllFilePath
       }
       if ($InternetIsWorking -eq $true -and $TestConnectionResults.PingSucceeded -eq $false) {
         $InternetDroppedTime = Get-Date
         $InternetDroppedTimeString = ($InternetDroppedTime.ToString() ) -replace '[ :/]','-'
-        $State = 'internet connection droped' + $InternetDroppedTimeString
+        $State = 'internet connection droped ' + $InternetDroppedTimeString
         $InternetIsWorking = $false
         '-----------------------' | Out-File -Append -FilePath $LogSummaryFilePath
         $State | Out-File -Append -FilePath $LogSummaryFilePath
