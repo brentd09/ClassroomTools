@@ -47,7 +47,6 @@ if (Test-Path -Path $CSVfilePath -PathType Leaf) {
   $Attendees = @()
   $LateAttendees = @()
   Get-Content $CSVfilePath | Select-Object -Skip 1 | ConvertFrom-Csv -Header 'CourseBookingNo','StudentName','Attendance' | ForEach-Object {
-    $LateFlag = $false 
     do {
       $Attendance = Read-Host -Prompt "Is `"$($_.studentname)`" on the course (y - yes, n - no or l - late) Default=y"
     } until ($Attendance -in @('y','n','l',''))
@@ -59,7 +58,13 @@ if (Test-Path -Path $CSVfilePath -PathType Leaf) {
   }
   [string]$FragAtttend = $Attendees | ConvertTo-Html -Fragment  -PreContent '<BR><BR>' 
   [string]$FragLate = $LateAttendees | ConvertTo-Html -Fragment -PreContent '<BR><BR>' 
-  ConvertTo-Html -Head $CSS -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath
-  Start-Process -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ArgumentList $ExportHTMLPath
+  try {ConvertTo-Html -Head $CSS -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
+  Catch {Write-Warning "$ExportHTMLPath could not be written to disk";break}
+  if (Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
+    Start-Process -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ArgumentList $ExportHTMLPath
+  }
+  else {
+    Write-Host "The HTML Attendance information is stored $ExportHTMLPath"
+  }
 }
 else {Write-Warning "$CSVfilePath does not exist as a file"}
