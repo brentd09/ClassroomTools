@@ -18,13 +18,14 @@
    can be a relative or absolute path. The path must include the name of the CSV
    file to be consumed  
 .EXAMPLE
-   ClassRoll.ps1 -CSVfilePath c:\exports\ClassList.csv
+   Submit-ClassRoll.ps1 -CSVfilePath c:\exports\ClassList.csv
    This will consume the file c:\exports\ClassList.csv and as the attendance 
    status of each student from the list and from this will create the HTML tables
 .NOTES
    General notes
      Created By: Brent Denny
      Created On: 31 Aug 2020
+     Changed on: 06 Sep 2020
 #>
 [CmdletBinding()]
 Param (
@@ -32,7 +33,6 @@ Param (
   [string]$CSVfilePath
 )
 if (Test-Path -Path $CSVfilePath -PathType Leaf) {
-  $ParentPath = Split-Path $CSVfilePath -Parent
   $LeafPath = (Split-Path $CSVfilePath -Leaf ) -replace '\s+',''
   $LeafPathNoExt = $LeafPath -replace '\.csv$',''
   $FullPathToFile = (Resolve-Path $CSVfilePath).Path | Split-Path -Parent
@@ -59,7 +59,7 @@ if (Test-Path -Path $CSVfilePath -PathType Leaf) {
   }
   [string]$FragAtttend = $Attendees | ConvertTo-Html -Fragment  -PreContent '<BR><BR>' 
   [string]$FragLate = $LateAttendees | ConvertTo-Html -Fragment -PreContent '<BR><BR>' 
-  try {ConvertTo-Html -Head $CSS -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
+  try {ConvertTo-Html -Head $CSS -PreContent '<h2>attendance BRENT DENNY</h2><br>' -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
   Catch {Write-Warning "$ExportHTMLPath could not be written to disk";break}
   if (Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
     Start-Process -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ArgumentList $ExportHTMLPath
