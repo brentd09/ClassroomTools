@@ -33,9 +33,10 @@ Param (
 )
 if (Test-Path -Path $CSVfilePath -PathType Leaf) {
   $ParentPath = Split-Path $CSVfilePath -Parent
-  $LeafPath = Split-Path $CSVfilePath -Leaf
+  $LeafPath = (Split-Path $CSVfilePath -Leaf ) -replace '\s+',''
   $LeafPathNoExt = $LeafPath -replace '\.csv$',''
-  $ExportHTMLPath = (Resolve-Path ($ParentPath.TrimEnd('\') +'\'+$LeafPathNoExt+'.html')).Path
+  $FullPathToFile = (Resolve-Path $CSVfilePath).Path | Split-Path -Parent
+  $ExportHTMLPath = $FullPathToFile.TrimEnd('\') +'\'+$LeafPathNoExt+'.html'
   
   $CSS = @'
   <style>
