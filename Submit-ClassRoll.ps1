@@ -47,9 +47,9 @@ if (Test-Path -Path $CSVfilePath -PathType Leaf) {
   
   $Attendees = @()
   $LateAttendees = @()
-  Get-Content $CSVfilePath | Select-Object -Skip 1 | ConvertFrom-Csv -Header 'CourseBookingNo','StudentName','Attendance' | ForEach-Object {
+  Get-Content $CSVfilePath | ConvertFrom-Csv | Select-Object -Property "Student Name",'Attendance' | ForEach-Object {
     do {
-      $Attendance = Read-Host -Prompt "Is `"$($_.studentname)`" on the course (y - yes, n - no or l - late) Default=y"
+      $Attendance = Read-Host -Prompt "Is `"$($_."student name")`" on the course (y - yes, n - no or l - late) Default=y"
     } until ($Attendance -in @('y','n','l',''))
     if ($Attendance -eq ''){$Attendance = 'y'}
     if ($Attendance -eq 'l'){$Attendance = 'LATE'}
