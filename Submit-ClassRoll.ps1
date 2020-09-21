@@ -47,7 +47,7 @@ if (Test-Path -Path $CSVfilePath -PathType Leaf) {
   
   $Attendees = @()
   $LateAttendees = @()
-  Get-Content $CSVfilePath | ConvertFrom-Csv | Select-Object -Property "Student Name",'Attendance' | ForEach-Object {
+  Get-Content $CSVfilePath | ConvertFrom-Csv | Sort-Object  | Select-Object -Property "Student Name",'Attendance' | ForEach-Object {
     do {
       $Attendance = Read-Host -Prompt "Is `"$($_."student name")`" on the course (y - yes, n - no or l - late) Default=y"
     } until ($Attendance -in @('y','n','l',''))
@@ -57,8 +57,8 @@ if (Test-Path -Path $CSVfilePath -PathType Leaf) {
     if ($Attendance -in @('y','n')){$Attendees += $_}
     else {$LateAttendees += $_}
   }
-  [string]$FragAtttend = $Attendees | ConvertTo-Html -Fragment  -PreContent '<BR><BR>' 
-  [string]$FragLate = $LateAttendees | ConvertTo-Html -Fragment -PreContent '<BR><BR>' 
+  [string]$FragAtttend = $Attendees | Sort-Object -Property "Student Name" | ConvertTo-Html -Fragment  -PreContent '<BR><BR>' 
+  [string]$FragLate = $LateAttendees | Sort-Object -Property "Student Name"  | ConvertTo-Html -Fragment -PreContent '<BR><BR>' 
   try {ConvertTo-Html -Head $CSS -PreContent '<h2>attendance BRENT DENNY</h2><br>' -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
   Catch {Write-Warning "$ExportHTMLPath could not be written to disk";break}
   if (Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
