@@ -9,6 +9,6 @@ $GitExeFile = $DownloadUrl -replace '.+\/',''
 $GitExeFilePath = $DownloadsDir.TrimEnd('\') + '\' + $GitExeFile
 $WebClientObj = [System.Net.WebClient]::new()
 $WebClientObj.DownloadFile($DownloadUrl,$GitExeFilePath)
-
+Start-Sleep -Seconds 10
 $InstallString = "$GitExeFilePath /VERYSILENT /NORESTART"
 Invoke-Expression -Command $InstallString
