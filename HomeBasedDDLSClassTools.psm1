@@ -18,10 +18,20 @@
      This is the path to the teams exported Attendance Sheet in CSV format. This 
      can be a relative or absolute path. The path must include the name of the CSV
      file to be consumed  
+  .PARAMETER StudentIntro
+     This is a switch parameter that changes the output of the student list to one 
+     you can print to record introduction information, it will automatically space 
+     the students in the table so that all fit on an A4 page when printed 
   .EXAMPLE
      Submit-ClassRoll -CSVfilePath c:\exports\ClassList.csv
-     This will consume the file c:\exports\ClassList.csv and as the attendance 
-     status of each student from the list and from this will create the HTML tables
+     This will consume the file c:\exports\ClassList.csv and ask about the attendance 
+     status of each student, from this it will create the HTML tables showing those
+     attending those that are not and those that arrived late
+  .EXAMPLE
+     Submit-ClassRoll -CSVfilePath c:\exports\ClassList.csv -StudentIntro
+     This will consume the file c:\exports\ClassList.csv and determine the number of 
+     students in the class it will then create an HTML table that can be printed so
+     that introductions can be recorded regarding each student on paper. 
   .NOTES
      General notes
        Created By: Brent Denny
@@ -31,36 +41,63 @@
   [CmdletBinding()]
   Param (
     [Parameter(Mandatory=$true)]
-    [string]$CSVfilePath
+    [string]$CSVfilePath,
+    [switch]$StudentIntro
   )
   if (Test-Path -Path $CSVfilePath -PathType Leaf) {
     $LeafPath = (Split-Path $CSVfilePath -Leaf ) -replace '\s+',''
     $LeafPathNoExt = $LeafPath -replace '\.csv$',''
     $FullPathToFile = (Resolve-Path $CSVfilePath).Path | Split-Path -Parent
-    $ExportHTMLPath = $FullPathToFile.TrimEnd('\') +'\'+$LeafPathNoExt+'.html'
-    
-    $CSS = @'
+    if ($StudentIntro -eq $true){$ExportHTMLPath = $FullPathToFile.TrimEnd('\') +'\'+$LeafPathNoExt+'-Intro'+'.html'}
+    else {$ExportHTMLPath = $FullPathToFile.TrimEnd('\') +'\'+$LeafPathNoExt+'.html'}
+    if ($StudentIntro -eq $true) {$Padding = 'td {padding-bottom: 50px;} table {width: 100%}'}
+    else {$Padding = ''}
+    $CSS = @"
     <style>
       table, tr,td,th {border:black 1pt solid;border-collapse:collapse;}
       td,th {padding-left:4pt;padding-right:4px;}
+      $Padding
     </style>
-'@
+"@
     
     $Attendees = @()
     $LateAttendees = @()
-    Get-Content $CSVfilePath | ConvertFrom-Csv | Sort-Object  | Select-Object -Property "Student Name",'Attendance' | ForEach-Object {
-      do {
-        $Attendance = Read-Host -Prompt "Is `"$($_."student name")`" on the course (y - yes, n - no or l - late) Default=y"
-      } until ($Attendance -in @('y','n','l',''))
-      if ($Attendance -eq ''){$Attendance = 'y'}
-      if ($Attendance -eq 'l'){$Attendance = 'LATE'}
-      $_.Attendance = $Attendance.ToUpper()
-      if ($Attendance -in @('y','n')){$Attendees += $_}
-      else {$LateAttendees += $_}
+    if ($StudentIntro -eq $true){
+      $ConvertedFileContents = Get-Content $CSVfilePath | ConvertFrom-Csv | Sort-Object -Property "Student Name" | Select-Object -Property "Student Name"
+      $ConvertedFileContents | ForEach-Object {
+        $Attendees += $_
+      }
     }
+    else {
+      $ConvertedFileContents = Get-Content $CSVfilePath | ConvertFrom-Csv | Sort-Object -Property "Student Name" | Select-Object -Property "Student Name",'Attendance' 
+      $ConvertedFileContents | ForEach-Object {
+        do {
+          $Attendance = Read-Host -Prompt "Is `"$($_."student name")`" on the course (y - yes, n - no or l - late) Default=y"
+        } until ($Attendance -in @('y','n','l',''))
+        if ($Attendance -eq ''){$Attendance = 'y'}
+        if ($Attendance -eq 'l'){$Attendance = 'LATE'}
+        $_.Attendance = $Attendance.ToUpper()
+        if ($Attendance -in @('y','n')){$Attendees += $_}
+        else {$LateAttendees += $_}
+      }   
+    }
+    $TotalStudents = $ConvertedFileContents.Count
+    $Spacing = 680 / $TotalStudents
+    if ($StudentIntro -eq $true) {$Padding = "td {padding-bottom: ${Spacing}px;} table {width: 100%}"}
+    else {$Padding = ''}
+    $CSS = @"
+    <style>
+      table, tr,td,th {border:black 1pt solid;border-collapse:collapse;}
+      td,th {padding-left:4pt;padding-right:4px;}
+      $Padding
+    </style>
+"@
+
     [string]$FragAtttend = $Attendees | Sort-Object -Property "Student Name" | ConvertTo-Html -Fragment  -PreContent '<BR><BR>' 
     [string]$FragLate = $LateAttendees | Sort-Object -Property "Student Name"  | ConvertTo-Html -Fragment -PreContent '<BR><BR>' 
-    try {ConvertTo-Html -Head $CSS -PreContent '<h2>attendance BRENT DENNY</h2><br>' -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
+    if ($StudentIntro -eq $true) {$Precontent = ' '}
+    else {$Precontent = '<h2>attendance BRENT DENNY</h2><br>'}
+    try {ConvertTo-Html -Head $CSS -PreContent $Precontent -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
     Catch {Write-Warning "$ExportHTMLPath could not be written to disk";break}
     if (Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
       Start-Process -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ArgumentList $ExportHTMLPath
