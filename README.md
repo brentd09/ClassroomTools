@@ -7,6 +7,6 @@ To use the HomeBasedDDLSClassTools.psm1
   - (You will need to create the HomeBasedDDLSClassTools directory). 
 - Once the HomeBasedDDLSClassTools.psm1 is copied into the HomeBasedDDLSClassTools directory
   - a new PowerShell command will be available: 
-    - Submit-ClassRoll
+    - **Submit-ClassRoll**
   - to get help for this command use: 
-    - Get-Help -showwindow Submit-ClassRoll  
+    - **Get-Help -showwindow Submit-ClassRoll**  
