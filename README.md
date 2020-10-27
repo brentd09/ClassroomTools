@@ -1,2 +1,2 @@
-# RoomSetups
-This runs the scripts that sets up for my instructor PC environment
+# Tools
+This repo contains scripts that may be useful for trainers
