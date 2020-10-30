@@ -36,7 +36,7 @@
      General notes
        Created By: Brent Denny
        Created On: 31 Aug 2020
-       Changed on: 05 Oct 2020
+       Changed on: 30 Oct 2020
   #>
   [CmdletBinding()]
   Param (
@@ -44,6 +44,11 @@
     [string]$CSVfilePath,
     [switch]$StudentIntro
   )
+  $DefaultSettingPath = 'HKCU:\SOFTWARE\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice'
+  $DefaultBrowserName = (Get-Item $DefaultSettingPath | Get-ItemProperty).ProgId
+  $DefaultBrowserOpenCommand = (Get-Item "HKLM:SOFTWARE\Classes\$DefaultBrowserName\shell\open\command" | Get-ItemProperty).'(default)'
+  $DefaultBrowserPath = [regex]::Match($DefaultBrowserOpenCommand,'\".+?\"')
+  $BrowserPath = $DefaultBrowserPath.Value
   if (Test-Path -Path $CSVfilePath -PathType Leaf) {
     $LeafPath = (Split-Path $CSVfilePath -Leaf ) -replace '\s+',''
     $LeafPathNoExt = $LeafPath -replace '\.csv$',''
@@ -100,7 +105,7 @@
     try {ConvertTo-Html -Head $CSS -PreContent $Precontent -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
     Catch {Write-Warning "$ExportHTMLPath could not be written to disk";break}
     if (Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
-      Start-Process -FilePath "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" -ArgumentList $ExportHTMLPath
+      Start-Process -FilePath $BrowserPath -ArgumentList $ExportHTMLPath
     }
     else {
       Write-Host "The HTML Attendance information is stored $ExportHTMLPath"
