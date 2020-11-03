@@ -1,6 +1,7 @@
 ﻿#
 # Quick and dirty unattended Git installer for classes
 #
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 $GitDownloadSite = Invoke-WebRequest -Uri 'https://git-scm.com/download/win' -UseBasicParsing 
 $RawLink = ($GitDownloadSite.Links | where {$_ -like '*64-bit Git for Windows Setup*'}).OuterHtml
 $DownloadUrl = $RawLink -replace '^.+"(.+)".+$','$1'
