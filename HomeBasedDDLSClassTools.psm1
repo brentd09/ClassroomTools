@@ -68,13 +68,21 @@
     $Attendees = @()
     $LateAttendees = @()
     if ($StudentIntro -eq $true){
-      $ConvertedFileContents = Get-Content $CSVfilePath | ConvertFrom-Csv | Sort-Object -Property "Student Name" | Select-Object -Property "Student Name"
+      $ConvertedFileContents = Get-Content $CSVfilePath | 
+        ConvertFrom-Csv | 
+        Where-Object {$_."Student Name" -notmatch '[#@%?]'} |
+        Sort-Object -Property "Student Name" | 
+        Select-Object -Property "Student Name"
       $ConvertedFileContents | ForEach-Object {
         $Attendees += $_
       }
     }
     else {
-      $ConvertedFileContents = Get-Content $CSVfilePath | ConvertFrom-Csv | Sort-Object -Property "Student Name" | Select-Object -Property "Student Name",'Attendance' 
+      $ConvertedFileContents = Get-Content $CSVfilePath | 
+        ConvertFrom-Csv | 
+        Where-Object {$_."Student Name" -notmatch '[#@%?]'} |
+        Sort-Object -Property "Student Name" | 
+        Select-Object -Property "Student Name",'Attendance' 
       $ConvertedFileContents | ForEach-Object {
         do {
           $Attendance = Read-Host -Prompt "Is `"$($_."student name")`" on the course (y - yes, n - no or l - late) Default=y"
