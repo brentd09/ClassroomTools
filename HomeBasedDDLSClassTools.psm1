@@ -22,6 +22,9 @@
      This is a switch parameter that changes the output of the student list to one 
      you can print to record introduction information, it will automatically space 
      the students in the table so that all fit on an A4 page when printed 
+  .PARAMETER TrainerName
+     The trainer name will be used to create the attendance report. The name will be 
+     changed into uppercase before the report is created. 
   .EXAMPLE
      Submit-ClassRoll -CSVfilePath c:\exports\ClassList.csv
      This will consume the file c:\exports\ClassList.csv and ask about the attendance 
@@ -42,8 +45,10 @@
   Param (
     [Parameter(Mandatory=$true)]
     [string]$CSVfilePath,
-    [switch]$StudentIntro
+    [switch]$StudentIntro,
+    [string]$TrainerName = 'Brent Denny'
   )
+  $TrainerName = $TrainerName.ToUpper()
   $DefaultSettingPath = 'HKCU:\SOFTWARE\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice'
   $DefaultBrowserName = (Get-Item $DefaultSettingPath | Get-ItemProperty).ProgId
   $DefaultBrowserOpenCommand = (Get-Item "HKLM:SOFTWARE\Classes\$DefaultBrowserName\shell\open\command" | Get-ItemProperty).'(default)'
@@ -109,7 +114,7 @@
     [string]$FragAtttend = $Attendees | Sort-Object -Property "Student Name" | ConvertTo-Html -Fragment  -PreContent '<BR><BR>' 
     [string]$FragLate = $LateAttendees | Sort-Object -Property "Student Name"  | ConvertTo-Html -Fragment -PreContent '<BR><BR>' 
     if ($StudentIntro -eq $true) {$Precontent = ' '}
-    else {$Precontent = '<h2>attendance BRENT DENNY</h2>'}
+    else {$Precontent = "<h2>attendance ${TrainerName}</h2>"}
     try {ConvertTo-Html -Head $CSS -PreContent $Precontent -PostContent $FragAtttend,$FragLate | Out-File $ExportHTMLPath}
     Catch {Write-Warning "$ExportHTMLPath could not be written to disk";break}
     if (Test-Path -Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe") {
