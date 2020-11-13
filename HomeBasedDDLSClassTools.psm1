@@ -156,7 +156,6 @@ function Invoke-BreakTimer {
   }
 
   $AllTimeZones = [System.TimeZoneInfo]::GetSystemTimeZones()
-  $TimeZoneIds = $AllTimeZones.id
   $TimeZoneNames = $AllTimeZones.DisplayName
   
   Add-Type -AssemblyName System.Windows.Forms
