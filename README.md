@@ -10,3 +10,6 @@ To use the HomeBasedDDLSClassTools.psm1
     - **Submit-ClassRoll**
   - to get help for this command use: 
     - **Get-Help -showwindow Submit-ClassRoll**  
+- I also have a timer now added to this list
+  - To run this 
+    - **Invoke-BreakTimer**
