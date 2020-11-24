@@ -157,7 +157,7 @@ function Invoke-BreakTimer {
 
   $AllTimeZones = [System.TimeZoneInfo]::GetSystemTimeZones()
   $TimeZoneNames = $AllTimeZones.DisplayName
-  
+  [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
   Add-Type -AssemblyName System.Windows.Forms
   [System.Windows.Forms.Application]::EnableVisualStyles()
 
@@ -169,6 +169,14 @@ function Invoke-BreakTimer {
   $LabForm.TopMost             = $true
   $LabForm.Select()
                                
+  $HourGlass                     = New-Object system.Windows.Forms.PictureBox
+  $HourGlass.width               = 30
+  $HourGlass.height              = 30
+  $HourGlass.location            = New-Object System.Drawing.Point(235,140)
+  $HourGlass.imageLocation       = "https://media4.giphy.com/media/l4FGIO2vCfJkakBtC/source.gif"
+  $HourGlass.SizeMode            = [System.Windows.Forms.PictureBoxSizeMode]::zoom
+ 
+
   $CurrentTimebtn              = New-Object system.Windows.Forms.Button
   $CurrentTimebtn.text         = "Get Current Time"
   $CurrentTimebtn.width        = 150
@@ -306,8 +314,7 @@ function Invoke-BreakTimer {
   $CloseBtn.location           = New-Object System.Drawing.Point(320,410)
   $CloseBtn.Font               = 'Microsoft Sans Serif,10'
 
-  # $CountDownLbl.Text = (Get-Date).ToShortTimeString()
-                           
+  # $CountDownLbl.Text = (Get-Date).ToShortTimeString()                      
   $LabForm.controls.AddRange(
     @(
       $HowLongtbox,
@@ -326,7 +333,8 @@ function Invoke-BreakTimer {
       $CloseBtn,
       $CountDownLbl,
       $RemainingMinLbl,
-      $ResetBtn
+      $ResetBtn,
+      $HourGlass
     )
   )
   
@@ -351,6 +359,7 @@ function Invoke-BreakTimer {
       $RemainingMinLbl.enabled = $true
       $CountDownLbl.Visible    = $true
       $RemainingMinLbl.Visible = $true
+      $HourGlass.Visible       = $true
       if ($HowLongtbox.Text -notmatch '^\d+$') {$HowLongtbox.Text = 15}
       $TimeSpan = New-TimeSpan -Minutes ($HowLongtbox.Text -as [int])
       $Script:Futuretime = (Get-Date).AddMinutes($TimeSpan.TotalMinutes -as [int])
@@ -400,6 +409,7 @@ function Invoke-BreakTimer {
       $RemainingMinLbl.enabled = $false
       $CountDownLbl.Visible    = $false
       $RemainingMinLbl.Visible = $false
+      $HourGlass.Visible       = $false
       $HowLongtbox.Select()
     }
   )
@@ -443,6 +453,7 @@ function Invoke-BreakTimer {
     $RemainingMinLbl.enabled = $false
     $CountDownLbl.Visible    = $false
     $RemainingMinLbl.Visible = $false
+    $HourGlass.Visible       = $false
     $LabForm.Activate()
     $HowLongtbox.Select()
   }
