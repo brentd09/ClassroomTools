@@ -78,10 +78,10 @@
 
 
   # Setup all of the variable that this program requires for installing git and vscode and then cloning the repo
-  $DateFilesDownloaded = Get-Date
   $WebClientObj = New-Object -TypeName System.Net.WebClient
   $GitDownloadPath = $env:HOMEDRIVE + $env:HOMEPATH + '\Downloads\GitInstaller.exe'
   $VSCodeDownloadPath = $env:HOMEDRIVE + $env:HOMEPATH + '\Downloads\VSCodeInstaller.exe'
+  $GitWebContent = try {Invoke-WebRequest -Uri 'https://git-scm.com/download/win'} catch {Write-Warning 'Unable to download latest version of git';break}
   $GitDownloadURL = (($GitWebContent).Links | Where-Object {$_ -match '64' -and $_ -notmatch 'portable'} ).Href
   $VSCodeDownloadURL = 'https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user'
   if ($GitHubUserName -ne '' -and $GitHubRepoName -ne '') {
@@ -98,6 +98,7 @@
     $WebClientObj.DownloadFile($GitDownloadURL,$GitDownloadPath)
   }  
   catch {
+    Write-Verbose "GitDownloadURL , GitDownloadPath = $GitDownloadURL  $GitDownloadPath"
     Write-Warning 'Unable to access git download website, failed to download'
     break
   }
@@ -106,6 +107,7 @@
     $WebClientObj.DownloadFile($VSCodeDownloadURL,$VSCodeDownloadPath)
   }
   catch {
+    Write-Verbose " VSCodeDownloadURL, VSCodeDownloadPath = $VSCodeDownloadURL $VSCodeDownloadPath"
     Write-Warning 'Unable to access VSCode download website, failed to download'
     break  
   }
@@ -114,6 +116,7 @@
     invoke-WebRequest -Uri $GitHubRepoURL
   }
   catch {
+    Write-Verbose "GitHubRepoURL = $GitHubRepoURL"
     Write-Warning 'Unable to access Github Repository'
     break  
   }
