@@ -107,9 +107,13 @@
     $WebClientObj.DownloadFile($VSCodeDownloadURL,$VSCodeDownloadPath)
   }
   catch {
-    Write-Verbose " VSCodeDownloadURL, VSCodeDownloadPath = $VSCodeDownloadURL $VSCodeDownloadPath"
-    Write-Warning 'Unable to access VSCode download website, failed to download'
-    break  
+    Start-Sleep -Seconds 10
+    try {$WebClientObj.DownloadFile($VSCodeDownloadURL,$VSCodeDownloadPath)}
+    catch {
+      Write-Verbose " VSCodeDownloadURL, VSCodeDownloadPath = $VSCodeDownloadURL $VSCodeDownloadPath"
+      Write-Warning 'Unable to access VSCode download website, failed to download'
+      break
+    }    
   }
   try {
     # Check access to the GitHub Repo
