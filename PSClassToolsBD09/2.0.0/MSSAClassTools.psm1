@@ -69,6 +69,14 @@
     [string]$GitEmailAddress = ''
   )
   
+  try {
+    Test-NetConnection -ComputerName 8.8.8.8 -InformationLevel Quiet -ErrorAction Stop *> $null
+  }
+  catch {
+    Write-Warning "Internet is not reachable";break
+  }
+
+
   # Setup all of the variable that this program requires for installing git and vscode and then cloning the repo
   $DateFilesDownloaded = Get-Date
   $WebClientObj = New-Object -TypeName System.Net.WebClient
