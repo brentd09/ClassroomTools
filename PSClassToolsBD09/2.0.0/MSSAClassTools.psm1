@@ -183,10 +183,6 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
   Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
 
-  if (Test-Path -Path E:\) {$CloneRootPath = 'E:'}
-  else {$CloneRootPath = $env:UserProfile + '\Documents'}
-  $GitHubRepoClonePath = $CloneRootPath + '\GitRoot\' + $GitHubRepoName 
-  git clone $GitHubRepoURL $GitHubRepoClonePath *> $null
   
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
   Write-Progress -Id 2 -Activity "Installing VSCode"
@@ -227,6 +223,14 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     $ErrorActionPreference = 'Continue'
   }
   catch {Write-Verbose "Git Config Failed"}
+
+  # Clone Github Repo
+  if (Test-Path -Path E:\) {$CloneRootPath = 'E:'}
+  else {$CloneRootPath = $env:UserProfile + '\Documents'}
+  $GitHubRepoClonePath = $CloneRootPath + '\GitRoot\' + $GitHubRepoName 
+  Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath  GitHubRepoName  $GitHubRepoName" 
+  git clone $GitHubRepoURL $GitHubRepoClonePath *> $null
+  
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 90 
   Write-Progress -Id 2 -Activity "Configuring VSCode"
 
