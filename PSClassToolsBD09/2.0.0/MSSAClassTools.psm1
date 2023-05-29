@@ -121,7 +121,7 @@
   }
   try {
     # Check access to the GitHub Repo
-    invoke-WebRequest -Uri $GitHubRepoURL
+    invoke-WebRequest -Uri $GitHubRepoURL *> $null
   }
   catch {
     Write-Verbose "GitHubRepoURL = $GitHubRepoURL"
@@ -162,7 +162,7 @@
       throw 
     }
     Start-Sleep -Seconds 1
-    if (Test-Path ($env:UserProfile + 'AppData\Local\Programs\Microsoft VS Code' )) {
+    if (Test-Path ($env:UserProfile + '\AppData\Local\Programs\Microsoft VS Code' )) {
       Write-Verbose "VSCode path found"
       $env:Path = $env:Path + ';' + $env:UserProfile + '\AppData\Local\Programs\Microsoft VS Code'
       $InstallSucceeded = $true
