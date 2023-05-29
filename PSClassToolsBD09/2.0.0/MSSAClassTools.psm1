@@ -87,7 +87,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 0 
   Write-Progress -Id 2 -Activity "Checking Internet Access"
-  
+  Write-Verbose 'Testing Internet'
   try {
     Resolve-DnsName -Name 'github.com' -ErrorAction Stop *> $null
   }
@@ -97,7 +97,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 15 
   Write-Progress -Id 2 -Activity "Setting main system variables"
-
+  Write-Verbose 'Setting up variables'
   # Setup all of the variable that this program requires for installing git and vscode and then cloning the repo
   $WebClientObj = New-Object -TypeName System.Net.WebClient
   $GitDownloadPath = $env:HOMEDRIVE + $env:HOMEPATH + '\Downloads\GitInstaller.exe'
@@ -117,6 +117,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -Id 2 -Activity "Downloading the installers for Git and VSCode"
 
   # Try to download the Git and VSCode installers
+  Write-Verbose 'Downloaad git'
   $ErrorActionPreference = 'Stop'
   try {
     # Git Installer download 
@@ -127,6 +128,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     Write-Verbose 'Unable to access git download website, failed to download'
     break
   }
+  Write-Verbose 'Download VScode'
   try {
     # VSCode installer download
     $WebClientObj.DownloadFile($VSCodeDownloadURL,$VSCodeDownloadPath)
@@ -144,6 +146,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
       break
     }    
   }
+  Write-Verbose 'Access to Repo'
   try {
     # Check access to the GitHub Repo
     invoke-WebRequest -Uri $GitHubRepoURL *> $null
@@ -157,7 +160,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 30 
   Write-Progress -Id 2 -Activity "Installing Git"
-
+  Write-Verbose 'Install Git'
   # Install Git using downloaded installer
   try {Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART" -ErrorAction 'Stop'}
   catch {
@@ -185,7 +188,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
   Write-Progress -Id 2 -Activity "Installing VSCode"
-
+  Write-Verbose 'Install VSCode'
   # Install VSCode using downloaded installer
   try {Invoke-Expression -Command "$VSCodeDownloadPath /VERYSILENT /NORESTART" -ErrorAction 'Stop'}
   catch {Write-Verbose "VSCode installer failed" }
@@ -208,7 +211,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
   Write-Progress -Id 2 -Activity "Configuring Git"
-
+  Write-Verbose 'Git config'
   # Modify Git Configuration
   try {
     $ErrorActionPreference = 'Stop'
@@ -225,7 +228,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 80 
   Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
-
+  Write-Verbose 'Clone Repo'
   # Clone Github Repo
   if (Test-Path -Path E:\) {$CloneRootPath = 'E:'}
   else {$CloneRootPath = $env:UserProfile + '\Documents'}
@@ -235,7 +238,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 90 
   Write-Progress -Id 2 -Activity "Configuring VSCode"
-
+  Write-Verbose 'VSCode config'
   # Modify VSCode config
   Do {
     Start-Sleep -Seconds 1
