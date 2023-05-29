@@ -70,7 +70,7 @@
   )
   
   try {
-    Test-NetConnection -ComputerName 8.8.8.8 -InformationLevel Quiet -ErrorAction Stop *> $null
+    Resolve-DnsName -Name 'github.com' -ErrorAction Stop
   }
   catch {
     Write-Warning "Internet is not reachable";break
@@ -108,7 +108,11 @@
   }
   catch {
     Start-Sleep -Seconds 10
-    try {$WebClientObj.DownloadFile($VSCodeDownloadURL,$VSCodeDownloadPath)}
+    try {
+      # try download again if failed the first time
+      $WebClientObj.DownloadFile($VSCodeDownloadURL,$VSCodeDownloadPath)
+      Start-Sleep -Seconds 5
+    }
     catch {
       Write-Verbose " VSCodeDownloadURL, VSCodeDownloadPath = $VSCodeDownloadURL $VSCodeDownloadPath"
       Write-Warning 'Unable to access VSCode download website, failed to download'
@@ -124,20 +128,24 @@
     Write-Warning 'Unable to access Github Repository'
     break  
   }
-  $ErrorActionPreference = 'Continue'
   
   # Install Git using downloaded installer
-  Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART"
+  try {Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART"}
+  catch {
+    Write-Warning "The Git installer has not started"
+    break 
+  }
   $InstallSucceeded = $false
   $Counter = 0
   do {
     $Counter++
-    if ($Counter -ge 100) {
-      Write-Error "The git installer failed to download"
+    if ($Counter -ge 360) {
+      Write-Error "The git installer failed to Install"
       throw 
     }
     Start-Sleep -Seconds 1
     if (Test-Path ($env:ProgramFiles + '\git\bin')) {
+      Write-Verbose "Git path found"
       $env:Path = $env:Path + ";" + "C:\Program Files\Git\bin"
       $InstallSucceeded = $true
     }
@@ -149,17 +157,18 @@
   $Counter = 0
   do {
     $Counter++
-    if ($Counter -ge 100) {
-      Write-Error "The git installer failed to download"
+    if ($Counter -ge 360) {
+      Write-Error "The VSCode installer failed to Install"
       throw 
     }
     Start-Sleep -Seconds 1
     if (Test-Path ($env:UserProfile + 'AppData\Local\Programs\Microsoft VS Code' )) {
+      Write-Verbose "VSCode path found"
       $env:Path = $env:Path + ';' + $env:UserProfile + '\AppData\Local\Programs\Microsoft VS Code'
       $InstallSucceeded = $true
     }
   } until ($InstallSucceeded -eq $true)
-
+  Start-Sleep -Seconds 60
   # Modify Git Configuration
   git config --global user.name $GitFullName
   git config --global user.email $GitEmailAddress
@@ -175,6 +184,7 @@
     $CodeProc = Get-Process | Where-Object {$_.Name -eq 'Code'}
   } until ($CodeProc.Count -ge 1)
   Stop-Process -Name Code -Force -Confirm:$false
+  
   #Creating the VSCode settings file
   $VSCodeSettingsObj = [PSCustomObject]@{
     "security.workspace.trust.untrustedFiles"= "open"
