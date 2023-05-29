@@ -92,7 +92,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     Resolve-DnsName -Name 'github.com' -ErrorAction Stop *> $null
   }
   catch {
-    Write-Warning "Internet is not reachable";break
+    Write-Verbose "Internet is not reachable";break
   }
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 15 
@@ -102,21 +102,21 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   $WebClientObj = New-Object -TypeName System.Net.WebClient
   $GitDownloadPath = $env:HOMEDRIVE + $env:HOMEPATH + '\Downloads\GitInstaller.exe'
   $VSCodeDownloadPath = $env:HOMEDRIVE + $env:HOMEPATH + '\Downloads\VSCodeInstaller.exe'
-  $GitWebContent = try {Invoke-WebRequest -Uri 'https://git-scm.com/download/win'} catch {Write-Warning 'Unable to download latest version of git';break}
+  $GitWebContent = try {Invoke-WebRequest -Uri 'https://git-scm.com/download/win'} catch {Write-Verbose 'Unable to download latest version of git';break}
   $GitDownloadURL = (($GitWebContent).Links | Where-Object {$_ -match '64' -and $_ -notmatch 'portable'} ).Href
   $VSCodeDownloadURL = 'https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user'
   if ($GitHubUserName -ne '' -and $GitHubRepoName -ne '') {
     $GitHubRepoURL = 'https://github.com/' + $GitHubUserName + '/' + $GitHubRepoName + '.git'
   }
   else {
-    Write-Warning 'GitHub URL was not set'
+    Write-Verbose 'GitHub URL was not set'
     break
   }
   if (Test-Path -Path 'e:\') {
     try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop' *> $null} 
     catch [System.Management.Automation.ErrorRecord]{}
     catch {
-      Write-Warning "E:\GitRoot could not be created"
+      Write-Verbose "E:\GitRoot could not be created"
     }
   }  
 
@@ -131,7 +131,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   }  
   catch {
     Write-Verbose "GitDownloadURL , GitDownloadPath = $GitDownloadURL  $GitDownloadPath"
-    Write-Warning 'Unable to access git download website, failed to download'
+    Write-Verbose 'Unable to access git download website, failed to download'
     break
   }
   try {
@@ -147,7 +147,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     }
     catch {
       Write-Verbose " VSCodeDownloadURL, VSCodeDownloadPath = $VSCodeDownloadURL $VSCodeDownloadPath"
-      Write-Warning 'Unable to access VSCode download website, failed to download'
+      Write-Verbose 'Unable to access VSCode download website, failed to download'
       break
     }    
   }
@@ -157,7 +157,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   }
   catch {
     Write-Verbose "GitHubRepoURL = $GitHubRepoURL"
-    Write-Warning 'Unable to access Github Repository'
+    Write-Verbose 'Unable to access Github Repository'
     break  
   }
   $ErrorActionPreference = 'Continue'
@@ -168,7 +168,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   # Install Git using downloaded installer
   try {Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART" -ErrorAction 'Stop'}
   catch {
-    Write-Warning "The Git installer has not started"
+    Write-Verbose "The Git installer has not started"
     break 
   }
   $InstallSucceeded = $false
@@ -192,9 +192,16 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   $GitHubRepoClonePath = 'E:\GitRoot' 
   try {
+    Set-Location $GitHubRepoClonePath -ErrorAction Stop
+  }
+  catch {
+    Start-Sleep -Seconds 60
+    try {Set-Location $GitHubRepoClonePath -ErrorAction Stop}
+    catch {Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"}
+  }
+  try{
     $ErrorActionPreference = 'Stop'
-    Set-Location $GitHubRepoClonePath
-    git clone $GitHubRepoURL *> $null
+    git clone $GitHubRepoURL 
     Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"
     $ErrorActionPreference = 'Continue'
   }
@@ -207,7 +214,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
   # Install VSCode using downloaded installer
   try {Invoke-Expression -Command "$VSCodeDownloadPath /VERYSILENT /NORESTART" -ErrorAction 'Stop'}
-  catch {Write-Warning "VSCode installer failed" }
+  catch {Write-Verbose "VSCode installer failed" }
   $InstallSucceeded = $false
   $Counter = 0
   do {
@@ -237,10 +244,10 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     $OldGitConf = Get-Content $GitConfigFile
     $NewGitConf = $OldGitConf -replace 'defaultBranch = \b.+\b','defaultBranch = main'
     try {Set-Content -Path $GitConfigFile -Value $NewGitConf -ErrorAction Stop}
-    catch {Write-Warning "The Git config file was not changed due to an error";break}
+    catch {Write-Verbose "The Git config file was not changed due to an error";break}
     $ErrorActionPreference = 'Continue'
   }
-  catch {Write-Warning "Git Config Failed"}
+  catch {Write-Verbose "Git Config Failed"}
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 90 
   Write-Progress -Id 2 -Activity "Configuring VSCode"
 
@@ -275,7 +282,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     }
   }
   try {Set-Content -Path "$env:APPDATA\Code\User\settings.json" -Value ($VSCodeSettingsObj | ConvertTo-Json)}
-  catch {Write-Warning "VSCode config failed"}
+  catch {Write-Verbose "VSCode config failed"}
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 100 
   Write-Progress -Id 2 -Activity "Complete"
