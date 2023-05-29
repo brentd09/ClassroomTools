@@ -112,6 +112,13 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     Write-Warning 'GitHub URL was not set'
     break
   }
+  if (Test-Path -Path 'e:\') {
+    try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop' *> $null} 
+    catch [System.Management.Automation.ErrorRecord]{}
+    catch {
+      Write-Warning "E:\GitRoot could not be created"
+    }
+  }  
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 10 
   Write-Progress -Id 2 -Activity "Downloading the installers for Git and VSCode"
@@ -184,38 +191,16 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
 
   $GitHubRepoClonePath = 'E:\GitRoot' 
-  $AltGitHubRepoClonePath = $env:UserProfile + '\Documents\GitRoot'
-  if (Test-Path -Path 'e:\') {
-    try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop'} 
-    catch [System.Management.Automation.ErrorRecord]{}
-    catch {
-      Write-Warning "E:\GitRoot could not be created"
-    }
-    try {
-      $ErrorActionPreference = 'Stop'
-      Set-Location $GitHubRepoClonePath
-      git clone $GitHubRepoURL *> $null
-      Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"
-      $ErrorActionPreference = 'Continue'
-    }
-    catch {
-      Write-Warning "GitHub Repo was not cloned in $GitHubRepoClonePath"
-    }
+  try {
+    $ErrorActionPreference = 'Stop'
+    Set-Location $GitHubRepoClonePath
+    git clone $GitHubRepoURL *> $null
+    Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"
+    $ErrorActionPreference = 'Continue'
   }
-  else {
-    try {New-Item -Path ($env:UserProfile + '\Documents') -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop'}
-    catch {}
-    try {
-      $ErrorActionPreference =  'Stop'
-      Set-Location -Path $AltGitHubRepoClonePath 
-      git clone $GitHubRepoURL *> $null
-      $ErrorActionPreference = 'Continue'
-    }
-    catch {
-      Write-Warning "GitHub Repo was not cloned in $AltGitHubRepoClonePath"
-    }    
+  catch {
+     Write-Verbose "Error cloning the repo"
   }
-  
   
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
   Write-Progress -Id 2 -Activity "Installing VSCode"
