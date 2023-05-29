@@ -95,6 +95,8 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     Write-Warning "Internet is not reachable";break
   }
 
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 15 
+  Write-Progress -Id 2 -Activity "Setting main system variables"
 
   # Setup all of the variable that this program requires for installing git and vscode and then cloning the repo
   $WebClientObj = New-Object -TypeName System.Net.WebClient
@@ -151,12 +153,13 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     Write-Warning 'Unable to access Github Repository'
     break  
   }
-  
+  $ErrorActionPreference = 'Continue'
+
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 30 
   Write-Progress -Id 2 -Activity "Installing Git"
 
   # Install Git using downloaded installer
-  try {Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART"}
+  try {Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART" -ErrorAction 'Stop'}
   catch {
     Write-Warning "The Git installer has not started"
     break 
@@ -183,26 +186,30 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   $GitHubRepoClonePath = 'E:\GitRoot' 
   $AltGitHubRepoClonePath = $env:UserProfile + '\Documents\GitRoot'
   if (Test-Path -Path 'e:\') {
-    try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory} 
+    try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop'} 
     catch [System.Management.Automation.ErrorRecord]{}
     catch {
       Write-Warning "E:\GitRoot could not be created"
     }
     try {
+      $ErrorActionPreference = 'Stop'
       Set-Location $GitHubRepoClonePath
       git clone $GitHubRepoURL *> $null
       Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"
+      $ErrorActionPreference = 'Continue'
     }
     catch {
       Write-Warning "GitHub Repo was not cloned in $GitHubRepoClonePath"
     }
   }
   else {
-    try {New-Item -Path ($env:UserProfile + '\Documents') -Name 'GitRoot' -ItemType directory}
+    try {New-Item -Path ($env:UserProfile + '\Documents') -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop'}
     catch {}
     try {
-      Set-Location $AltGitHubRepoClonePath
+      $ErrorActionPreference =  'Stop'
+      Set-Location -Path $AltGitHubRepoClonePath 
       git clone $GitHubRepoURL *> $null
+      $ErrorActionPreference = 'Continue'
     }
     catch {
       Write-Warning "GitHub Repo was not cloned in $AltGitHubRepoClonePath"
@@ -214,7 +221,8 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -Id 2 -Activity "Installing VSCode"
 
   # Install VSCode using downloaded installer
-  Invoke-Expression -Command "$VSCodeDownloadPath /VERYSILENT /NORESTART"
+  try {Invoke-Expression -Command "$VSCodeDownloadPath /VERYSILENT /NORESTART" -ErrorAction 'Stop'}
+  catch {Write-Warning "VSCode installer failed" }
   $InstallSucceeded = $false
   $Counter = 0
   do {
@@ -236,21 +244,26 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -Id 2 -Activity "Configuring Git"
 
   # Modify Git Configuration
-  git config --global user.name $GitFullName
-  git config --global user.email $GitEmailAddress
-  $GitConfigFile = "c:\Program Files\Git\etc\gitconfig"
-  $OldGitConf = Get-Content $GitConfigFile
-  $NewGitConf = $OldGitConf -replace 'defaultBranch = \b.+\b','defaultBranch = main'
-  try {Set-Content -Path $GitConfigFile -Value $NewGitConf -ErrorAction Stop}
-  catch {Write-Warning "The Git config file was not changed due to an error";break}
-
+  try {
+    $ErrorActionPreference = 'Stop'
+    git config --global user.name $GitFullName
+    git config --global user.email $GitEmailAddress
+    $GitConfigFile = "c:\Program Files\Git\etc\gitconfig"
+    $OldGitConf = Get-Content $GitConfigFile
+    $NewGitConf = $OldGitConf -replace 'defaultBranch = \b.+\b','defaultBranch = main'
+    try {Set-Content -Path $GitConfigFile -Value $NewGitConf -ErrorAction Stop}
+    catch {Write-Warning "The Git config file was not changed due to an error";break}
+    $ErrorActionPreference = 'Continue'
+  }
+  catch {Write-Warning "Git Config Failed"}
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 90 
   Write-Progress -Id 2 -Activity "Configuring VSCode"
 
   # Modify VSCode config
   Do {
     Start-Sleep -Seconds 1
-    $CodeProc = Get-Process | Where-Object {$_.Name -eq 'Code'}
+    try { $CodeProc = Get-Process -Name 'Code' -ErrorAction Stop }
+    catch {}
   } until ($CodeProc.Count -ge 1)
   Hide-Window
   Stop-Process -Name Code -Force -Confirm:$false
@@ -276,7 +289,8 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
         "editor.wordHighlightBackground"= "#f5e6f0"
     }
   }
-  Set-Content -Path "$env:APPDATA\Code\User\settings.json" -Value ($VSCodeSettingsObj | ConvertTo-Json)
+  try {Set-Content -Path "$env:APPDATA\Code\User\settings.json" -Value ($VSCodeSettingsObj | ConvertTo-Json)}
+  catch {Write-Warning "VSCode config failed"}
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 100 
   Write-Progress -Id 2 -Activity "Complete"
