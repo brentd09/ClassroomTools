@@ -1,12 +1,12 @@
 ﻿function Install-VSCodeAndGit {
   <#
   .SYNOPSIS
-    This command installd Git and VSCode into the AZ040 labs
+    This command installs Git and VSCode and configures them 
   .DESCRIPTION
     This command will locate the lastest versions of Git and VSCode
     and install them silently, without any user input. It also sets
     the font size to 16 and the tab sie to two spaces in the VSCode
-    settings file
+    settings file and configures Git
   .PARAMETER GitFullName
     This is the name that will be set in the Git global config
   .PARAMETER GitEmailAddress
@@ -20,21 +20,17 @@
     repo into the e:\GitRoot folder. If the E: does not exist it will create
     the repo clone in your Documents folder.
   .EXAMPLE
-    Install-VsCodeAndGit -GitFullName "John Dowe" -GitEmailAddress "JDowe@hotmail.com"
-    This command downloads the git and vscode installer files into the temp directory
-    and then installs these applications in VERYSILENT mode. It also sets up the
-    Git Config file and sets default values for VSCode
-  .EXAMPLE
     Install-VsCodeAndGit -GitFullName "John Dowe" -GitEmailAddress "JDowe@hotmail.com" -GitHubUserName 'JohnD' -GitHubRepoName 'MyRepo'
     This command downloads the git and vscode installer files into the temp directory
     and then installs these applications in VERYSILENT mode. It also sets up the
     Git Config file and sets default values for VSCode. This will also clone the
     GitHub repository from https://github.com/JohnD/MyRepo into the e:\GitRoot folder
+    or into the Documents folder if there is no E:
   .NOTES
     General notes
       Created By: Brent Denny
       Created On: 01-Mar-2022
-      Last Modified: 26-May-2023
+      Last Modified: 29-May-2023
     ChangeLog
       Ver Date Details
       --- ---- -------
@@ -60,30 +56,19 @@
       v1.4.3 25-May-2023 Fixed a few changes to vscode colors
       v1.4.4 25-May-2023 Fixed the download vscode issue 
       v2.0.0 26-May-2023 Full rewrite of the code
+      v2.0.1 29-May-2023 Completed the testing on the rewrite
   #>
   [cmdletbinding()]
   Param (
-    [string]$GitHubUserName = '',
-    [string]$GitHubRepoName = '',
-    [string]$GitFullName = '',
-    [string]$GitEmailAddress = ''
+    [Parameter(Mandatory=$true)]
+    [string]$GitHubUserName ,
+    [Parameter(Mandatory=$true)]
+    [string]$GitHubRepoName ,
+    [Parameter(Mandatory=$true)]
+    [string]$GitFullName ,
+    [Parameter(Mandatory=$true)]
+    [string]$GitEmailAddress 
   )
-
-  function Hide-Window {
-    $ErrorActionPreference = 'Stop'
-    try {$Procs = Get-Process -Name 'Code'}
-    catch {return $False}
-    
-    $Win32ShowWindowAsync = Add-Type –memberDefinition @” 
-[DllImport("user32.dll")] 
-public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow); 
-“@ -name “Win32ShowWindowAsync” -namespace Win32Functions –passThru
-    foreach ($Proc in $Procs) {
-      $MainWindowHandle = $Proc.MainWindowHandle
-      $Win32ShowWindowAsync::ShowWindowAsync($MainWindowHandle, 6) | Out-Null
-    }
-  }
-
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 0 
   Write-Progress -Id 2 -Activity "Checking Internet Access"
@@ -186,7 +171,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
 
   
-  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 50
   Write-Progress -Id 2 -Activity "Installing VSCode"
   Write-Verbose 'Install VSCode'
   # Install VSCode using downloaded installer
@@ -245,7 +230,6 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     try { $CodeProc = Get-Process -Name 'Code' -ErrorAction Stop }
     catch {}
   } until ($CodeProc.Count -ge 1)
-  Hide-Window
   Stop-Process -Name Code -Force -Confirm:$false
   
   #Creating the VSCode settings file
