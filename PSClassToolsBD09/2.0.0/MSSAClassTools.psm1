@@ -180,11 +180,10 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     }
   } until ($InstallSucceeded -eq $true)
 
-  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
-  Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
+
 
   
-  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
   Write-Progress -Id 2 -Activity "Installing VSCode"
 
   # Install VSCode using downloaded installer
@@ -207,7 +206,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   } until ($InstallSucceeded -eq $true)
   Start-Sleep -Seconds 60
 
-  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 80 
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
   Write-Progress -Id 2 -Activity "Configuring Git"
 
   # Modify Git Configuration
@@ -223,6 +222,9 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     $ErrorActionPreference = 'Continue'
   }
   catch {Write-Verbose "Git Config Failed"}
+
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 80 
+  Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
 
   # Clone Github Repo
   if (Test-Path -Path E:\) {$CloneRootPath = 'E:'}
