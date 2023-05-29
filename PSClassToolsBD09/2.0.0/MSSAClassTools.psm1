@@ -68,6 +68,23 @@
     [string]$GitFullName = '',
     [string]$GitEmailAddress = ''
   )
+
+  function Hide-Window {
+    $ErrorActionPreference = 'Stop'
+    try {$Procs = Get-Process -Name 'Code'}
+    catch {return $False}
+    
+    $Win32ShowWindowAsync = Add-Type –memberDefinition @” 
+[DllImport("user32.dll")] 
+public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow); 
+“@ -name “Win32ShowWindowAsync” -namespace Win32Functions –passThru
+    foreach ($Proc in $Procs) {
+      $MainWindowHandle = $Proc.MainWindowHandle
+      $Win32ShowWindowAsync::ShowWindowAsync($MainWindowHandle, 6) | Out-Null
+    }
+  }
+
+
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 0 
   Write-Progress -Id 2 -Activity "Checking Internet Access"
   
@@ -231,6 +248,7 @@
     Start-Sleep -Seconds 1
     $CodeProc = Get-Process | Where-Object {$_.Name -eq 'Code'}
   } until ($CodeProc.Count -ge 1)
+  Hide-Window
   Stop-Process -Name Code -Force -Confirm:$false
   
   #Creating the VSCode settings file
