@@ -68,9 +68,11 @@
     [string]$GitFullName = '',
     [string]$GitEmailAddress = ''
   )
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 0 
+  Write-Progress -Id 2 -Activity "Checking Internet Access"
   
   try {
-    Resolve-DnsName -Name 'github.com' -ErrorAction Stop
+    Resolve-DnsName -Name 'github.com' -ErrorAction Stop *> $null
   }
   catch {
     Write-Warning "Internet is not reachable";break
@@ -91,6 +93,10 @@
     Write-Warning 'GitHub URL was not set'
     break
   }
+
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 10 
+  Write-Progress -Id 2 -Activity "Downloading the installers for Git and VSCode"
+
   # Try to download the Git and VSCode installers
   $ErrorActionPreference = 'Stop'
   try {
@@ -129,6 +135,9 @@
     break  
   }
   
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 30 
+  Write-Progress -Id 2 -Activity "Installing Git"
+
   # Install Git using downloaded installer
   try {Invoke-Expression -Command "$GitDownloadPath /VERYSILENT /NORESTART"}
   catch {
@@ -151,6 +160,9 @@
     }
   } until ($InstallSucceeded -eq $true)
   
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
+  Write-Progress -Id 2 -Activity "Installing VSCode"
+
   # Install VSCode using downloaded installer
   Invoke-Expression -Command "$VSCodeDownloadPath /VERYSILENT /NORESTART"
   $InstallSucceeded = $false
@@ -169,6 +181,10 @@
     }
   } until ($InstallSucceeded -eq $true)
   Start-Sleep -Seconds 60
+
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 80 
+  Write-Progress -Id 2 -Activity "Configuring Git"
+
   # Modify Git Configuration
   git config --global user.name $GitFullName
   git config --global user.email $GitEmailAddress
@@ -177,6 +193,9 @@
   $NewGitConf = $OldGitConf -replace 'defaultBranch = \b.+\b','defaultBranch = main'
   try {Set-Content -Path $GitConfigFile -Value $NewGitConf -ErrorAction Stop}
   catch {Write-Warning "The Git config file was not changed due to an error";break}
+
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 90 
+  Write-Progress -Id 2 -Activity "Configuring VSCode"
 
   # Modify VSCode config
   Do {
@@ -207,4 +226,10 @@
     }
   }
   Set-Content -Path "$env:APPDATA\Code\User\settings.json" -Value ($VSCodeSettingsObj | ConvertTo-Json)
+
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 100 
+  Write-Progress -Id 2 -Activity "Complete"
+
 }
+
+
