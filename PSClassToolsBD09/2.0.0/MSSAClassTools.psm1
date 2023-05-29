@@ -180,14 +180,18 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
   Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
 
-  $GitHubRepoClonePath = 'e:\GitRoot\' 
+  $GitHubRepoClonePath = 'E:\GitRoot' 
   $AltGitHubRepoClonePath = $env:UserProfile + '\Documents\GitRoot'
   if (Test-Path -Path 'e:\') {
     try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory} 
-    catch {}
+    catch [System.Management.Automation.ErrorRecord]{}
+    catch {
+      Write-Warning "E:\GitRoot could not be created"
+    }
     try {
       Set-Location $GitHubRepoClonePath
       git clone $GitHubRepoURL *> $null
+      Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"
     }
     catch {
       Write-Warning "GitHub Repo was not cloned in $GitHubRepoClonePath"
