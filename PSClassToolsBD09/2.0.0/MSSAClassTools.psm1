@@ -112,13 +112,6 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
     Write-Verbose 'GitHub URL was not set'
     break
   }
-  if (Test-Path -Path 'e:\') {
-    try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory -ErrorAction 'Stop' *> $null} 
-    catch [System.Management.Automation.ErrorRecord]{}
-    catch {
-      Write-Verbose "E:\GitRoot could not be created"
-    }
-  }  
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 10 
   Write-Progress -Id 2 -Activity "Downloading the installers for Git and VSCode"
@@ -190,24 +183,10 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
   Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
 
-  $GitHubRepoClonePath = 'E:\GitRoot' 
-  try {
-    Set-Location $GitHubRepoClonePath -ErrorAction Stop
-  }
-  catch {
-    Start-Sleep -Seconds 60
-    try {Set-Location $GitHubRepoClonePath -ErrorAction Stop}
-    catch {Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"}
-  }
-  try{
-    $ErrorActionPreference = 'Stop'
-    git clone $GitHubRepoURL 
-    Write-Verbose "GitHubRepoClonePath $GitHubRepoClonePath GitHubRepoURL $GitHubRepoURL"
-    $ErrorActionPreference = 'Continue'
-  }
-  catch {
-     Write-Verbose "Error cloning the repo"
-  }
+  if (Test-Path -Path E:\) {$CloneRootPath = 'E:'}
+  else {$CloneRootPath = $env:UserProfile + '\Documents'}
+  $GitHubRepoClonePath = $CloneRootPath + '\GitRoot\' + $GitHubRepoName 
+  git clone $GitHubRepoURL $GitHubRepoClonePath *> $null
   
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
   Write-Progress -Id 2 -Activity "Installing VSCode"
@@ -217,7 +196,7 @@ public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
   catch {Write-Verbose "VSCode installer failed" }
   $InstallSucceeded = $false
   $Counter = 0
-  do {
+  do { 
     $Counter++
     if ($Counter -ge 360) {
       Write-Error "The VSCode installer failed to Install"
