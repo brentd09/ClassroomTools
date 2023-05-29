@@ -159,6 +159,35 @@
       $InstallSucceeded = $true
     }
   } until ($InstallSucceeded -eq $true)
+
+  Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 45 
+  Write-Progress -Id 2 -Activity "Cloning GitHub Repository"
+
+  $GitHubRepoClonePath = 'e:\GitRoot\' 
+  $AltGitHubRepoClonePath = $env:UserProfile + '\Documents\GitRoot'
+  if (Test-Path -Path 'e:\') {
+    try {New-Item -Path e:\ -Name 'GitRoot' -ItemType directory} 
+    catch {}
+    try {
+      Set-Location $GitHubRepoClonePath
+      git clone $GitHubRepoURL *> $null
+    }
+    catch {
+      Write-Warning "GitHub Repo was not cloned in $GitHubRepoClonePath"
+    }
+  }
+  else {
+    try {New-Item -Path ($env:UserProfile + '\Documents') -Name 'GitRoot' -ItemType directory}
+    catch {}
+    try {
+      Set-Location $AltGitHubRepoClonePath
+      git clone $GitHubRepoURL *> $null
+    }
+    catch {
+      Write-Warning "GitHub Repo was not cloned in $AltGitHubRepoClonePath"
+    }    
+  }
+  
   
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 60 
   Write-Progress -Id 2 -Activity "Installing VSCode"
