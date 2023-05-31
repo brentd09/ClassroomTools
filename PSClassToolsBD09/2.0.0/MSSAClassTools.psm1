@@ -28,9 +28,9 @@
     or into the Documents folder if there is no E:
   .NOTES
     General notes
-      Created By: Brent Denny
-      Created On: 01-Mar-2022
-      Last Modified: 29-May-2023
+      Created By:    Brent Denny
+      Created On:    01-Mar-2022
+      Last Modified: 30-May-2023
     ChangeLog
       Ver Date Details
       --- ---- -------
@@ -57,6 +57,10 @@
       v1.4.4 25-May-2023 Fixed the download vscode issue 
       v2.0.0 26-May-2023 Full rewrite of the code
       v2.0.1 29-May-2023 Completed the testing on the rewrite
+      v2.0.2 30-May-2023 Fixed some minor spelling mistakes and other incidentals
+      v2.1.1 30-May-2023 Added Set-PreCourseConfigForSkillable to set firewall setings and execution policy to unrestricted
+      v2.1.2 30-May-2023 Modified the function Set-PreCourseConfigForSkillable by removing the execution policy commands
+      v2.1.3 30-May-2023 Added the error handling and removal of any CimSessions in the Set-PreCourseConfigForSkillable fn
   #>
   [cmdletbinding()]
   Param (
@@ -72,7 +76,7 @@
 
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 0 
   Write-Progress -Id 2 -Activity "Checking Internet Access"
-  Write-Verbose 'Testing Internet'
+  Write-Verbose 'Testing Internet access'
   try {
     Resolve-DnsName -Name 'github.com' -ErrorAction Stop *> $null
   }
@@ -102,7 +106,7 @@
   Write-Progress -Id 2 -Activity "Downloading the installers for Git and VSCode"
 
   # Try to download the Git and VSCode installers
-  Write-Verbose 'Downloaad git'
+  Write-Verbose 'Download git'
   $ErrorActionPreference = 'Stop'
   try {
     # Git Installer download 
@@ -131,7 +135,7 @@
       break
     }    
   }
-  Write-Verbose 'Access to Repo'
+  Write-Verbose 'Check access to github Repo'
   try {
     # Check access to the GitHub Repo
     invoke-WebRequest -Uri $GitHubRepoURL *> $null
@@ -170,7 +174,7 @@
 
 
 
-  
+  Write-Warning "VSCode will launch briefly, this is part of the install process, wait until the installation is complete"
   Write-Progress -id 1 -Activity "Getting Git and VSCode ready for you" -PercentComplete 50
   Write-Progress -Id 2 -Activity "Installing VSCode"
   Write-Verbose 'Install VSCode'
@@ -261,4 +265,51 @@
 
 }
 
+function Set-PreCourseConfigForSkillable {
+  <#
+  .SYNOPSIS
+    Turn off the firewall profiles for each of the computers in the lab
+  .DESCRIPTION
+    This script will create a remote connection to the other two computers and disable the 
+    firewall profiles. This is needed as some of the labs do not work correctly with these 
+    firewalls blocking some traffic
+  .NOTES
+    General notes
+      Created By:    Brent Denny
+      Created On:    30-May-2023
+      Last Modified: 30-May-2023
+    ChangeLog
+      Ver Date Details
+      --- ---- -------
+      v1.0.0 30-May-2023 Created this tool to diable the firewalls
+      v1.0.1 30-May-2023 Added the error handling and removal of any CimSessions
+  .EXAMPLE
+    Set-PreCourseConfigForSkillable
+    This will disable all of the firewall policies for each of the three machines in the lab
+  #>
+  
+  
+  [CmdletBinding()]
+  param ( 
+    [pscredential]$Cred = (Get-Credential -UserName 'ADATUM\Administrator' -Message 'Enter the Password')
+   )
 
+  # set firewall profiles to disabled
+  foreach ($Computer in @('LON-CL1','LON-SVR1','LON-DC1') ) {
+    if (Test-Connection -ComputerName $Computer -Quiet) {
+      if ($Computer -eq 'LON-CL1') {  # Create a DCOM session to the Client machine to disable the firewalls
+        try {
+          $CimSess = New-CimSession -ComputerName $Computer -SessionOption (New-CimSessionOption -Protocol Dcom) -Credential $Cred -ErrorAction Stop
+          Set-NetFirewallProfile -CimSession $CimSess -All -Enabled False -ErrorAction Stop
+        } catch {Write-Warning "Failed to diable the firewall of $Computer"}  
+      }
+      else {  # Create Wsman sessions to the other computers to disable the firewalls
+        try {
+          $CimSess = New-CimSession -ComputerName $Computer -SessionOption (New-CimSessionOption -Protocol Wsman) -Credential $Cred -ErrorAction Stop
+          Set-NetFirewallProfile -CimSession $CimSess -All -Enabled False -ErrorAction Stop
+        } catch {Write-Warning "Failed to diable the firewall of $Computer"}
+      }
+    }
+  }
+  Get-CimSession | Remove-CimSession
+}
